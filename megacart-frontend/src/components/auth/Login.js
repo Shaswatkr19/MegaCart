@@ -4,7 +4,7 @@ import './Auth.css';
 
 const Login = ({ onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
-    email: '',
+    username: '', // ✅ Using username field
     password: ''
   });
   const [error, setError] = useState('');
@@ -24,12 +24,27 @@ const Login = ({ onClose, onSwitchToRegister }) => {
     setLoading(true);
     setError('');
 
-    const result = await login(formData.email, formData.password);
+    // ✅ Debug: Log form submission
+    console.log('Form submitted with:', { 
+      username: formData.username, 
+      password: '***' 
+    });
+
+    // ✅ Basic validation
+    if (!formData.username.trim() || !formData.password.trim()) {
+      setError('Please fill in all fields');
+      setLoading(false);
+      return;
+    }
+
+    const result = await login(formData.username.trim(), formData.password);
     
     if (result.success) {
+      console.log('Login successful');
       onClose();
     } else {
-      setError(result.error);
+      console.error('Login failed:', result.error);
+      setError(result.error || 'Login failed');
     }
     setLoading(false);
   };
@@ -43,16 +58,22 @@ const Login = ({ onClose, onSwitchToRegister }) => {
         </div>
         
         <form onSubmit={handleSubmit}>
-          {error && <div className="error-message">{error}</div>}
+          {/* ✅ Safe error display */}
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
           
           <div className="form-group">
             <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
+              type="email" // Keep email type for validation
+              name="username" // ✅ Name matches the state field
+              placeholder="Email/Username"
+              value={formData.username}
               onChange={handleChange}
               required
+              autoComplete="username"
             />
           </div>
           
@@ -64,6 +85,7 @@ const Login = ({ onClose, onSwitchToRegister }) => {
               value={formData.password}
               onChange={handleChange}
               required
+              autoComplete="current-password"
             />
           </div>
           

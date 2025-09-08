@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import './Navbar.css';
 import UserProfile from './auth/UserProfile';
 
-const Navbar = ({ cartItemCount, onCartClick, onLogoClick, isAuthenticated, user, logout, onLoginClick }) => {
+const Navbar = ({ cartItemCount, onCartClick, onLogoClick, isAuthenticated, user, logout, onLoginClick, onNavigation }) => {
   const [showProfile, setShowProfile] = useState(false);
 
   return (
@@ -17,11 +17,11 @@ const Navbar = ({ cartItemCount, onCartClick, onLogoClick, isAuthenticated, user
 
         {/* Navigation Links */}
         <div className="nav-links">
-          <a href="#home" className="nav-link">Home</a>
-          <a href="#products" className="nav-link">Products</a>
-          <a href="#categories" className="nav-link">Categories</a>
-          <a href="#deals" className="nav-link">Deals</a>
-          <a href="#contact" className="nav-link">Contact</a>
+          <button className="nav-link" onClick={() => onNavigation('home')}>Home</button>
+          <button className="nav-link" onClick={() => onNavigation('products')}>Products</button>
+          <button className="nav-link" onClick={() => onNavigation('deals')}>Deals</button>
+          <button className="nav-link" onClick={() => onNavigation('contact')}>Contact</button>
+          <button className="nav-link" onClick={() => onNavigation('about')}>About Us</button>
         </div>
 
         {/* Right Side */}
