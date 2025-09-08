@@ -25,11 +25,14 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(false);
   const [apiConnected, setApiConnected] = useState(false);
+  
 
   // Auth states
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user] = useState(null); // Removed setUser since it's not being used
+  
   // Categories state (dynamic from backend)
   const [categories, setCategories] = useState(['All']);
 
@@ -58,8 +61,8 @@ function App() {
     });
   }, [products, searchTerm, selectedCategory]);
 
-
   console.log('Product images:', filteredProducts.map(p => ({ name: p.name, image: p.image })));
+
   // Cart functions
   const addToCart = (product, quantity = 1) => {
     setCart(prevCart => {
@@ -98,6 +101,28 @@ function App() {
   const getTotalItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
+  
+  // Authentication handlers
+  const handleLogin = (userData) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+    setShowLogin(false);
+  };
+
+  const handlelogout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+  
+  // // Navigation handlers
+  // const handleNavigation = (view) => {
+  //   setCurrentView(view);
+  //   // Reset search and category when navigating
+  //   if (view === 'home' || view === 'products') {
+  //     setSearchTerm('');
+  //     setSelectedCategory('All');
+  //   }
+  // };
 
   // Navigation handlers
   const handleNavigation = (view) => {
@@ -118,6 +143,21 @@ function App() {
         block: 'start'
       });
     }
+  };
+
+  // Handle search button click from navbar
+  const handleSearchClick = () => {
+    // Navigate to products page and scroll to search
+    setCurrentView('products');
+    // Small delay to ensure the view has changed before scrolling
+    setTimeout(() => {
+      if (productsRef.current) {
+        productsRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }, 100);
   };
 
   // Fetch products from FastAPI with comprehensive error handling
@@ -779,7 +819,6 @@ function App() {
                   }}>
                     🌟 Today's Best Deals
                   </h2>
-                  </section>
                   
                   <div style={{
                     display: 'grid',
@@ -819,13 +858,16 @@ function App() {
                             
                             <div style={{ textAlign: 'center', marginBottom: '15px' }}>
                               <div style={{ fontSize: '3rem', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '10vh' }}>
-                              <img
-                                  src={product.image}
-                                  alt={product.name}
-                                  className="product-image"
-                                  style={{ maxWidth: '100%', height: '20vh' }}
-/>            
-                      </div>
+                                {product.image && product.image.startsWith('http') ? (
+                                  <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    style={{ maxWidth: '100%', height: '60px', objectFit: 'cover' }}
+                                  />
+                                ) : (
+                                  <span style={{ fontSize: '3rem' }}>{product.image || '📦'}</span>
+                                )}
+                              </div>
                               <h4 style={{ 
                                 fontSize: '1.1rem', 
                                 marginBottom: '8px', 
@@ -876,7 +918,7 @@ function App() {
                       );
                     })}
                   </div>
-                
+                </section>
 
                 {/* Deal Categories */}
                 <section style={{ marginBottom: '60px' }}>
@@ -997,7 +1039,7 @@ function App() {
             <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
               <h2 style={{ textAlign: 'center', marginBottom: '50px', fontSize: '3rem', color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>About Us</h2>
               
-              {/* Founder Section */}
+              {/* Company Info */}
               <div style={{
                 background: 'rgba(255,255,255,0.95)',
                 borderRadius: '20px',
@@ -1293,6 +1335,10 @@ function App() {
           onLoginClick={() => setShowLogin(true)}
           currentView={currentView}
           onNavigation={handleNavigation}
+          onSearchClick={handleSearchClick}
+          isAuthenticated={isAuthenticated}
+          user={user}
+          logout={() => setIsAuthenticated(false)}
         />
         <main>
           {renderCurrentView()}

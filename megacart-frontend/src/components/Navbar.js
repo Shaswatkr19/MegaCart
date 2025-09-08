@@ -3,7 +3,17 @@ import React, { useState } from 'react';
 import './Navbar.css';
 import UserProfile from './auth/UserProfile';
 
-const Navbar = ({ cartItemCount, onCartClick, onLogoClick, isAuthenticated, user, logout, onLoginClick, onNavigation }) => {
+const Navbar = ({ 
+  cartItemCount, 
+  onCartClick, 
+  onLogoClick, 
+  isAuthenticated, 
+  user, 
+  logout, 
+  onLoginClick, 
+  onNavigation,
+  onSearchClick // Add this prop for search functionality
+}) => {
   const [showProfile, setShowProfile] = useState(false);
 
   return (
@@ -26,8 +36,8 @@ const Navbar = ({ cartItemCount, onCartClick, onLogoClick, isAuthenticated, user
 
         {/* Right Side */}
         <div className="nav-right">
-          {/* Search Icon */}
-          <button className="nav-icon-btn">
+          {/* Search Icon - Now functional */}
+          <button className="nav-icon-btn" onClick={onSearchClick} title="Search">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
@@ -37,17 +47,35 @@ const Navbar = ({ cartItemCount, onCartClick, onLogoClick, isAuthenticated, user
           {/* User Menu */}
           {isAuthenticated ? (
             <div className="user-menu">
-              <button onClick={() => setShowProfile(true)}>
-                {user?.name || "Profile"}
+              {/* Welcome message */}
+              <span className="welcome-msg">Welcome, {user?.name || "User"}!</span>
+              
+              {/* Profile button */}
+              <button 
+                className="profile-btn"
+                onClick={() => setShowProfile(true)}
+                title="View Profile"
+              >
+                👤 Profile
               </button>
-              <button onClick={logout}>Logout</button>
+              
+              {/* Logout button */}
+              <button 
+                className="logout-btn"
+                onClick={logout}
+                title="Logout"
+              >
+                Logout
+              </button>
             </div>
           ) : (
-            <button onClick={onLoginClick}>Login</button>
+            <button className="login-btn" onClick={onLoginClick}>
+              Login
+            </button>
           )}
 
           {/* Cart */}
-          <button className="cart-btn" onClick={onCartClick}>
+          <button className="cart-btn" onClick={onCartClick} title="Shopping Cart">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"></path>
               <circle cx="9" cy="20" r="1"></circle>
