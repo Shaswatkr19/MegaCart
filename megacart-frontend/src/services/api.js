@@ -1,6 +1,6 @@
 // src/services/api.js - Complete API Service
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'https://megacart-xfnq.onrender.com';
 
 // Mock data - define these constants at the top of the file
 const MOCK_PRODUCTS = [
