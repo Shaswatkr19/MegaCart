@@ -31,7 +31,7 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user] = useState(null); // Removed setUser since it's not being used
+  const [user, setUser] = useState(null); // Removed setUser since it's not being used
   
   // Categories state (dynamic from backend)
   const [categories, setCategories] = useState(['All']);
@@ -102,27 +102,17 @@ function App() {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
   
-  // Authentication handlers
-  const handleLogin = (userData) => {
-    setIsAuthenticated(true);
-    setUser(userData);
-    setShowLogin(false);
-  };
+  // // Authentication handlers
+  // const handleLogin = (userData) => {
+  //   setIsAuthenticated(true);
+  //   setUser(userData);
+  //   setShowLogin(false);
+  // };
 
-  const handlelogout = () => {
+  const handleLogout = () => {
     setIsAuthenticated(false);
     setUser(null);
   };
-  
-  // // Navigation handlers
-  // const handleNavigation = (view) => {
-  //   setCurrentView(view);
-  //   // Reset search and category when navigating
-  //   if (view === 'home' || view === 'products') {
-  //     setSearchTerm('');
-  //     setSelectedCategory('All');
-  //   }
-  // };
 
   // Navigation handlers
   const handleNavigation = (view) => {
@@ -159,6 +149,19 @@ function App() {
       }
     }, 100);
   };
+  
+
+  // // Navigation handlers
+  // const handleNavigation = (view) => {
+  //   setCurrentView(view);
+  //   // Reset search and category when navigating
+  //   if (view === 'home' || view === 'products') {
+  //     setSearchTerm('');
+  //     setSelectedCategory('All');
+  //   }
+  // };
+
+  
 
   // Fetch products from FastAPI with comprehensive error handling
   const fetchProducts = useCallback(async () => {
@@ -1338,7 +1341,7 @@ function App() {
           onSearchClick={handleSearchClick}
           isAuthenticated={isAuthenticated}
           user={user}
-          logout={() => setIsAuthenticated(false)}
+          logout={handleLogout}
         />
         <main>
           {renderCurrentView()}

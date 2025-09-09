@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
       if (response.ok) {
         // Store token and set user
         localStorage.setItem('token', data.access_token);
-        setUser(data.user);
+        setUser(data.user || { email: username });
         return { success: true };
       } else {
         // Handle different error types

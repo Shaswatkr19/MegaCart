@@ -3,16 +3,16 @@ import React, { useState } from 'react';
 import './Navbar.css';
 import UserProfile from './auth/UserProfile';
 
-const Navbar = ({ 
-  cartItemCount, 
-  onCartClick, 
-  onLogoClick, 
-  isAuthenticated, 
-  user, 
-  logout, 
-  onLoginClick, 
+const Navbar = ({
+  cartItemCount,
+  onCartClick,
+  onLogoClick,
+  isAuthenticated,
+  user,
+  logout,           // App.js ka handleLogout
+  onLoginClick,     // App.js ka setShowLogin
   onNavigation,
-  onSearchClick // Add this prop for search functionality
+  onSearchClick
 }) => {
   const [showProfile, setShowProfile] = useState(false);
 
@@ -36,63 +36,42 @@ const Navbar = ({
 
         {/* Right Side */}
         <div className="nav-right">
-          {/* Search Icon - Now functional */}
+          {/* Search */}
           <button className="nav-icon-btn" onClick={onSearchClick} title="Search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
+            🔍
           </button>
 
-          {/* User Menu */}
-          {isAuthenticated ? (
-            <div className="user-menu">
-              {/* Welcome message */}
-              <span className="welcome-msg">Welcome, {user?.name || "User"}!</span>
-              
-              {/* Profile button */}
-              <button 
+          {/* Auth buttons */}
+          {!isAuthenticated ? (
+            <button className="login-btn" onClick={onLoginClick}>
+              Login
+            </button>
+          ) : (
+            <>
+              <span className="welcome-msg">Welcome, {user?.name || user?.email}!</span>
+              <button
                 className="profile-btn"
                 onClick={() => setShowProfile(true)}
                 title="View Profile"
               >
                 👤 Profile
               </button>
-              
-              {/* Logout button */}
-              <button 
+              <button
                 className="logout-btn"
                 onClick={logout}
                 title="Logout"
               >
                 Logout
               </button>
-            </div>
-          ) : (
-            <button className="login-btn" onClick={onLoginClick}>
-              Login
-            </button>
+            </>
           )}
 
           {/* Cart */}
           <button className="cart-btn" onClick={onCartClick} title="Shopping Cart">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"></path>
-              <circle cx="9" cy="20" r="1"></circle>
-              <circle cx="20" cy="20" r="1"></circle>
-            </svg>
-            {cartItemCount > 0 && (
-              <span className="cart-badge">{cartItemCount}</span>
-            )}
+            🛒
+            {cartItemCount > 0 && <span className="cart-badge">{cartItemCount}</span>}
           </button>
         </div>
-
-        {/* Mobile Menu Button */}
-        <button className="mobile-menu-btn">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
       </div>
 
       {/* Profile Modal */}
