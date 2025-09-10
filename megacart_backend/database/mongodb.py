@@ -1,10 +1,13 @@
-# megacart_backend/database/mongodb.py - FIXED MongoDB Configuration
+# mongodb.py - Debug version with multiple connection attempts
 
 import motor.motor_asyncio
 import os
+import pymongo
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 import asyncio
 import logging
+from datetime import datetime
+from urllib.parse import quote_plus
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -14,131 +17,215 @@ logger = logging.getLogger(__name__)
 client = None
 database = None
 
-# Connection settings - MOVED TO ENVIRONMENT VARIABLES FOR SECURITY
-MONGODB_URL = os.getenv("MONGODB_URL")  # Remove hardcoded credentials
+# Connection settings
+MONGODB_URL = os.getenv("MONGODB_URL")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "megacart")
 
-# Fallback for local development (if no env var set)
-if not MONGODB_URL:
-    MONGODB_URL = "mongodb://localhost:27017/megacart"
-    logger.warning("⚠️ Using local MongoDB fallback. Set MONGODB_URL environment variable for production.")
-
-async def connect_to_mongo():
-    """Create database connection with improved error handling"""
-    global client, database
+def debug_connection_string():
+    """Debug and validate connection string"""
+    if not MONGODB_URL:
+        print("❌ MONGODB_URL not set in environment variables")
+        return False
     
+    print(f"🔍 Connection string analysis:")
+    print(f"   Length: {len(MONGODB_URL)}")
+    print(f"   Starts with: {MONGODB_URL[:20]}...")
+    print(f"   Contains +srv: {'mongodb+srv://' in MONGODB_URL}")
+    print(f"   Contains cluster name: {'cluster' in MONGODB_URL.lower()}")
+    
+    # Check for common issues
+    issues = []
+    if ' ' in MONGODB_URL:
+        issues.append("Contains spaces")
+    if not MONGODB_URL.startswith(('mongodb://', 'mongodb+srv://')):
+        issues.append("Invalid protocol")
+    if '@' not in MONGODB_URL:
+        issues.append("Missing credentials section")
+    
+    if issues:
+        print(f"⚠️ Potential issues found: {', '.join(issues)}")
+        return False
+    
+    print("✅ Connection string format looks valid")
+    return True
+
+async def test_direct_connection():
+    """Test direct MongoDB connection without Motor"""
     try:
-        print("🔄 Attempting MongoDB connection...")
-        logger.info(f"Connecting to: {MONGODB_URL[:30]}...")
+        print("🧪 Testing direct PyMongo connection...")
         
-        # FIXED: More reasonable timeout values and SSL settings
-        client = motor.motor_asyncio.AsyncIOMotorClient(
+        # Create direct client for testing
+        direct_client = pymongo.MongoClient(
             MONGODB_URL,
-            serverSelectionTimeoutMS=15000,    # Increased to 15 seconds
-            connectTimeoutMS=15000,            # Increased timeout
-            socketTimeoutMS=15000,             # Increased timeout
-            maxPoolSize=10,
-            retryWrites=True,
-            w="majority",
-            # FIXED SSL settings for MongoDB Atlas
-            tls=True,
-            tlsAllowInvalidCertificates=False,  # Set to False for better security
-            # Removed conflicting SSL options
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000
         )
         
-        # Test the connection with longer timeout
-        await asyncio.wait_for(client.admin.command('ping'), timeout=15.0)
+        # Test connection
+        direct_client.admin.command('ping')
+        print("✅ Direct PyMongo connection successful")
         
-        database = client[DATABASE_NAME]
+        # List databases
+        db_names = direct_client.list_database_names()
+        print(f"📄 Available databases: {db_names}")
         
-        print("✅ MongoDB connected successfully")
-        logger.info("MongoDB connection established")
-        
-        # Test database access
-        try:
-            collections = await database.list_collection_names()
-            print(f"📄 Available collections: {collections}")
-        except Exception as e:
-            logger.warning(f"Could not list collections: {e}")
-        
+        direct_client.close()
         return True
         
-    except asyncio.TimeoutError:
-        print("❌ MongoDB connection timeout - Check your internet connection")
-        logger.error("MongoDB connection timeout")
-        return False
-    except ConnectionFailure as e:
-        print(f"❌ MongoDB connection failed: {e}")
-        logger.error(f"Connection failure: {e}")
-        return False
-    except ServerSelectionTimeoutError as e:
-        print(f"❌ MongoDB server selection timeout: {e}")
-        logger.error(f"Server selection timeout: {e}")
-        return False
     except Exception as e:
-        print(f"❌ MongoDB connection error: {e}")
-        logger.error(f"Unexpected error: {e}")
+        print(f"❌ Direct connection failed: {e}")
         return False
+
+async def connect_with_different_formats():
+    """Try different connection string formats"""
+    global client, database
+    
+    if not MONGODB_URL:
+        return False
+    
+    # Extract components from original URL
+    base_url = MONGODB_URL
+    
+    # Different connection formats to try
+    formats = []
+    
+    # Original format
+    formats.append({
+        "name": "Original URL",
+        "url": base_url
+    })
+    
+    # With specific options
+    if '?' not in base_url:
+        formats.append({
+            "name": "With SSL options",
+            "url": base_url + "?ssl=true&ssl_cert_reqs=CERT_NONE"
+        })
+        formats.append({
+            "name": "With retry options", 
+            "url": base_url + "?retryWrites=true&w=majority"
+        })
+        formats.append({
+            "name": "Without SSL",
+            "url": base_url + "?ssl=false"
+        })
+    
+    for attempt_num, format_config in enumerate(formats, 1):
+        try:
+            print(f"🔄 Attempt {attempt_num}: {format_config['name']}")
+            
+            client = motor.motor_asyncio.AsyncIOMotorClient(
+                format_config['url'],
+                serverSelectionTimeoutMS=8000,
+                connectTimeoutMS=8000,
+                socketTimeoutMS=8000,
+                maxPoolSize=5,
+                retryWrites=True
+            )
+            
+            # Test connection
+            await asyncio.wait_for(client.admin.command('ping'), timeout=8.0)
+            
+            database = client[DATABASE_NAME]
+            print(f"✅ Connected with {format_config['name']}")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ {format_config['name']} failed: {str(e)[:80]}...")
+            if client:
+                client.close()
+                client = None
+            continue
+    
+    return False
+
+async def connect_to_mongo():
+    """Main connection function with comprehensive debugging"""
+    global client, database
+    
+    print("🚀 Starting MongoDB connection process...")
+    
+    # Step 1: Debug connection string
+    if not debug_connection_string():
+        print("❌ Connection string validation failed")
+        return False
+    
+    # Step 2: Test direct connection first
+    direct_test = await test_direct_connection()
+    if not direct_test:
+        print("❌ Direct connection test failed - cluster may be down")
+        return False
+    
+    # Step 3: Try Motor connections with different formats
+    motor_success = await connect_with_different_formats()
+    if motor_success:
+        print("✅ Motor connection established")
+        return True
+    
+    print("❌ All connection attempts failed")
+    return False
 
 async def close_mongo_connection():
     """Close database connection"""
-    global client
+    global client, database
     if client:
         try:
             client.close()
-            print("✅ Disconnected from MongoDB")
+            client = None
+            database = None
+            print("✅ MongoDB connection closed")
         except Exception as e:
-            print(f"❌ Error disconnecting from MongoDB: {e}")
+            print(f"❌ Error closing connection: {e}")
 
 def get_database():
-    """Get database instance with error handling"""
+    """Get database instance"""
     global database
     if database is None:
-        raise ConnectionError("Database not connected. Please call connect_to_mongo() first.")
+        raise ConnectionError("Database not connected")
     return database
 
-async def test_database_operations():
-    """Test basic database operations"""
+async def health_check():
+    """Check connection health"""
     try:
-        db = get_database()
-        
-        # Test user collection
-        user_count = await db.users.estimated_document_count()
-        print(f"👥 Users in database: {user_count}")
-        
-        # Test products collection
-        product_count = await db.products.estimated_document_count()
-        print(f"📦 Products in database: {product_count}")
-        
-        return True
+        if client and database:
+            await asyncio.wait_for(client.admin.command('ping'), timeout=5.0)
+            return {"status": "connected", "connected": True}
+        return {"status": "disconnected", "connected": False}
     except Exception as e:
-        print(f"❌ Database operation test failed: {e}")
-        return False
+        return {"status": "error", "connected": False, "error": str(e)}
 
-# Retry mechanism for database operations
+# Retry mechanism
 async def execute_with_retry(operation, max_retries=3, delay=1):
-    """Execute database operation with retry mechanism"""
+    """Execute with retry"""
     for attempt in range(max_retries):
         try:
             return await operation()
         except Exception as e:
-            if attempt == max_retries - 1:  # Last attempt
-                print(f"❌ Operation failed after {max_retries} attempts: {e}")
+            if attempt == max_retries - 1:
                 raise e
             else:
-                print(f"⚠️ Attempt {attempt + 1} failed, retrying in {delay}s: {e}")
                 await asyncio.sleep(delay)
-                delay *= 2  # Exponential backoff
-    
+                delay *= 2
     return None
 
-# Health check function
-async def health_check():
-    """Check MongoDB connection health"""
-    try:
-        if client:
-            await client.admin.command('ping')
-            return True
-        return False
-    except Exception:
-        return False
+def is_connected():
+    """Check if connected"""
+    return client is not None and database is not None
+
+# Environment check
+def check_environment():
+    """Check environment setup"""
+    print("🔍 Environment Check:")
+    print(f"   MONGODB_URL set: {bool(MONGODB_URL)}")
+    print(f"   DATABASE_NAME: {DATABASE_NAME}")
+    
+    if MONGODB_URL:
+        # Hide password but show structure
+        if '@' in MONGODB_URL:
+            parts = MONGODB_URL.split('@')
+            if len(parts) > 1:
+                hidden_url = parts[0].split('//')[0] + '//***:***@' + '@'.join(parts[1:])
+                print(f"   URL structure: {hidden_url}")
+    
+    return bool(MONGODB_URL)
