@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegaCart - Your Shopping Destination</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+        }
+        
+        /* Modern loading spinner with smooth animation */
+        .loading-spinner {
+            border: 3px solid rgba(59, 130, 246, 0.1);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: modernSpin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+        @keyframes modernSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        /* Enhanced product card animations with modern hover effects */
+        .product-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        .product-card:hover::before {
+            left: 100%;
+        }
+        .product-card:hover {
+            transform: translateY(-12px) scale(1.03);
+            box-shadow: 0 25px 50px rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Modern glassmorphism with better blur and borders */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Smooth modern animations */
+        .fade-in {
+            animation: modernFadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        @keyframes modernFadeIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .slide-in {
+            animation: modernSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        @keyframes modernSlideIn {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .bounce-in {
+            animation: modernBounceIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        @keyframes modernBounceIn {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.05) rotate(2deg); }
+            70% { transform: scale(0.95) rotate(-1deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        /* Modern gradient text with better colors */
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Enhanced hero background with modern gradient */
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(6, 182, 212, 0.1) 100%);
+            position: relative;
+        }
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        /* Modern button styles with enhanced gradients */
+        .modern-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        .modern-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        .modern-btn:hover::before {
+            left: 100%;
+        }
+        .modern-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Floating animation for hero elements */
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        /* Modern scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, createContext, useContext } = React;
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Auth Context
+        const AuthContext = createContext(null);
+
+        const AuthProvider = ({ children }) => {
+            const [user, setUser] = useState(null);
+            const [token, setToken] = useState(() => {
+                try {
+                    return localStorage.getItem('megacart_token');
+                } catch {
+                    return null;
+                }
+            });
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                if (token) {
+                    fetchUserProfile();
+                } else {
+                    setLoading(false);
+                }
+            }, [token]);
+
+            const fetchUserProfile = async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const userData = await response.json();
+                        setUser(userData);
+                    } else {
+                        console.log('Token invalid, logging out');
+                        logout();
+                    }
+                } catch (error) {
+                    console.error('Error fetching profile:', error);
+                    logout();
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const login = async (email, password) => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const accessToken = data.access_token;
+                        
+                        try {
+                            localStorage.setItem('megacart_token', accessToken);
+                        } catch (e) {
+                            console.warn('Could not save token to localStorage');
+                        }
+                        
+                        setToken(accessToken);
+                        setUser(data.user);
+                        return { success: true };
+                    } else {
+                        const error = await response.json();
+                        return { success: false, error: error.detail || 'Login failed' };
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    return { success: false, error: 'Network error. Please check if backend is running.' };
+                }
+            };
+
+            const register = async (name, email, password) => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, password })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const accessToken = data.access_token;
+                        
+                        try {
+                            localStorage.setItem('megacart_token', accessToken);
+                        } catch (e) {
+                            console.warn('Could not save token to localStorage');
+                        }
+                        
+                        setToken(accessToken);
+                        setUser(data.user);
+                        return { success: true };
+                    } else {
+                        const error = await response.json();
+                        return { success: false, error: error.detail || 'Registration failed' };
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    return { success: false, error: 'Network error. Please check if backend is running.' };
+                }
+            };
+
+            const logout = () => {
+                try {
+                    localStorage.removeItem('megacart_token');
+                } catch (e) {
+                    console.warn('Could not remove token from localStorage');
+                }
+                setToken(null);
+                setUser(null);
+            };
+
+            return (
+                <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
+                    {children}
+                </AuthContext.Provider>
+            );
+        };
+
+        const useAuth = () => useContext(AuthContext);
+
+        // Cart Context
+        const CartContext = createContext(null);
+
+        const CartProvider = ({ children }) => {
+            const [cart, setCart] = useState(() => {
+                try {
+                    const savedCart = localStorage.getItem('megacart_cart');
+                    return savedCart ? JSON.parse(savedCart) : [];
+                } catch {
+                    return [];
+                }
+            });
+
+            useEffect(() => {
+                try {
+                    localStorage.setItem('megacart_cart', JSON.stringify(cart));
+                } catch (e) {
+                    console.warn('Could not save cart to localStorage');
+                }
+            }, [cart]);
+
+            const addToCart = (product) => {
+                setCart(prevCart => {
+                    const existingItem = prevCart.find(item => item.id === product.id);
+                    if (existingItem) {
+                        return prevCart.map(item =>
+                            item.id === product.id
+                                ? { ...item, quantity: item.quantity + 1 }
+                                : item
+                        );
+                    }
+                    return [...prevCart, { ...product, quantity: 1 }];
+                });
+            };
+
+            const removeFromCart = (productId) => {
+                setCart(prevCart => prevCart.filter(item => item.id !== productId));
+            };
+
+            const updateQuantity = (productId, quantity) => {
+                if (quantity <= 0) {
+                    removeFromCart(productId);
+                } else {
+                    setCart(prevCart =>
+                        prevCart.map(item =>
+                            item.id === productId ? { ...item, quantity } : item
+                        )
+                    );
+                }
+            };
+
+            const clearCart = () => setCart([]);
+
+            const getCartTotal = () => {
+                return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            };
+
+            const getCartCount = () => {
+                return cart.reduce((count, item) => count + item.quantity, 0);
+            };
+
+            return (
+                <CartContext.Provider value={{
+                    cart,
+                    addToCart,
+                    removeFromCart,
+                    updateQuantity,
+                    clearCart,
+                    getCartTotal,
+                    getCartCount
+                }}>
+                    {children}
+                </CartContext.Provider>
+            );
+        };
+
+        const useCart = () => useContext(CartContext);
+
+        // Components
+        const Navbar = ({ onShowAuth, onShowCart }) => {
+            const { user, logout } = useAuth();
+            const { getCartCount } = useCart();
+            const [showMobileMenu, setShowMobileMenu] = useState(false);
+            const [showUserMenu, setShowUserMenu] = useState(false);
+
+            return (
+                <nav className="glassmorphism text-white shadow-2xl sticky top-0 z-50">
+                    <div className="container mx-auto px-4">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center">
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="text-2xl font-bold flex items-center space-x-2 hover:scale-105 transition-transform"
+                                >
+                                    <span className="text-3xl float-animation">🛒</span>
+                                    <span className="gradient-text">MegaCart</span>
+                                </button>
+                            </div>
+
+                            <div className="hidden md:flex items-center space-x-6">
+                                <button 
+                                    onClick={() => document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="hover:text-blue-300 transition-colors px-3 py-1 rounded-md hover:bg-white/10"
+                                >
+                                    Products
+                                </button>
+                                <button 
+                                    onClick={() => document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="hover:text-blue-300 transition-colors px-3 py-1 rounded-md hover:bg-white/10"
+                                >
+                                    About Us
+                                </button>
+                                <button 
+                                    onClick={onShowCart}
+                                    className="relative hover:text-blue-300 transition-colors px-3 py-1 rounded-md hover:bg-white/10 flex items-center space-x-2"
+                                >
+                                    <span>🛍️</span>
+                                    <span>Cart</span>
+                                    {getCartCount() > 0 && (
+                                        <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center bounce-in">
+                                            {getCartCount()}
+                                        </span>
+                                    )}
+                                </button>
+
+                                {user ? (
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setShowUserMenu(!showUserMenu)}
+                                            className="flex items-center space-x-2 hover:text-blue-300 transition-colors px-3 py-1 rounded-md hover:bg-white/10"
+                                        >
+                                            <span>👤</span>
+                                            <span>{user.name}</span>
+                                            <span className="text-xs">▼</span>
+                                        </button>
+                                        {showUserMenu && (
+                                            <div className="absolute right-0 mt-2 w-48 glassmorphism rounded-md shadow-lg py-1 z-50 slide-in">
+                                                <div className="px-4 py-2 text-sm text-white/80 border-b border-white/20">
+                                                    {user.email}
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        setShowUserMenu(false);
+                                                        logout();
+                                                    }}
+                                                    className="block px-4 py-2 text-sm text-white/80 hover:bg-white/10 w-full text-left"
+                                                >
+                                                    🚪 Logout
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={onShowAuth}
+                                        className="modern-btn text-white px-4 py-2 rounded-md font-semibold"
+                                    >
+                                        Login
+                                    </button>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                                className="md:hidden text-2xl"
+                            >
+                                {showMobileMenu ? '✕' : '☰'}
+                            </button>
+                        </div>
+
+                        {showMobileMenu && (
+                            <div className="md:hidden py-4 space-y-2 slide-in">
+                                <button 
+                                    onClick={() => {
+                                        setShowMobileMenu(false);
+                                        document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="block w-full text-left py-2 px-4 hover:bg-white/10 rounded"
+                                >
+                                    Products
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setShowMobileMenu(false);
+                                        document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="block w-full text-left py-2 px-4 hover:bg-white/10 rounded"
+                                >
+                                    About Us
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setShowMobileMenu(false);
+                                        onShowCart();
+                                    }}
+                                    className="block w-full text-left py-2 px-4 hover:bg-white/10 rounded"
+                                >
+                                    Cart ({getCartCount()})
+                                </button>
+                                {user ? (
+                                    <button 
+                                        onClick={() => {
+                                            setShowMobileMenu(false);
+                                            logout();
+                                        }} 
+                                        className="block w-full text-left py-2 px-4 hover:bg-white/10 rounded"
+                                    >
+                                        Logout
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => {
+                                            setShowMobileMenu(false);
+                                            onShowAuth();
+                                        }}
+                                        className="block w-full text-left py-2 px-4 hover:bg-white/10 rounded"
+                                    >
+                                        Login
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </nav>
+            );
+        };
+
+        const HeroSection = () => {
+            return (
+                <div className="hero-bg py-20 relative">
+                    <div className="container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row items-center">
+                            <div className="md:w-1/2 mb-10 md:mb-0 relative z-10">
+                                <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 fade-in">
+                                    Welcome to <span className="gradient-text">MegaCart</span>
+                                </h1>
+                                <p className="text-xl text-white/80 mb-8 fade-in leading-relaxed">
+                                    Discover amazing products at unbeatable prices. Shop with confidence and experience the future of online shopping!
+                                </p>
+                                <button
+                                    onClick={() => document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="modern-btn text-white px-8 py-4 rounded-full text-lg font-semibold bounce-in"
+                                >
+                                    Shop Now ✨
+                                </button>
+                            </div>
+                            <div className="md:w-1/2 text-center relative z-10">
+                                <div className="text-8xl float-animation">
+                                    🛍️
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const AboutSection = () => {
+            return (
+                <div id="about-section" className="py-20 relative">
+                    <div className="container mx-auto px-4">
+                        <h2 className="text-4xl font-bold text-center mb-16 text-white fade-in">
+                            About <span className="gradient-text">MegaCart</span>
+                        </h2>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                            <div className="glassmorphism rounded-2xl p-8 fade-in">
+                                <h3 className="text-2xl font-bold text-white mb-6">Our Story</h3>
+                                <p className="text-white/80 mb-6 leading-relaxed">
+                                    MegaCart was founded with a vision to revolutionize online shopping by providing 
+                                    customers with an exceptional experience, quality products, and unbeatable prices. 
+                                    We believe that shopping should be convenient, enjoyable, and accessible to everyone.
+                                </p>
+                                <p className="text-white/80 leading-relaxed">
+                                    Our commitment to excellence drives us to continuously improve our platform, 
+                                    expand our product range, and deliver outstanding customer service that exceeds expectations.
+                                </p>
+                            </div>
+                            
+                            <div className="glassmorphism rounded-2xl p-8 fade-in">
+                                <div className="text-center mb-6">
+                                    <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 float-animation">
+                                        👨‍💼
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">Meet Our Founder</h3>
+                                </div>
+                                
+                                <div className="text-center">
+                                    <h4 className="text-xl font-semibold gradient-text mb-2">Shaswat Kumar</h4>
+                                    <p className="text-white/70 mb-4">Founder & CEO</p>
+                                    <p className="text-white/60 mb-6">📍 Ranchi, Jharkhand</p>
+                                    
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-center space-x-3 text-white/70">
+                                            <span>📧</span>
+                                            <span>shaswatsinha05@gmail.com</span>
+                                        </div>
+                                        <div className="flex items-center justify-center space-x-3 text-white/70">
+                                            <span>📱</span>
+                                            <span>+91 70045 04120</span>
+                                        </div>
+                                        <div className="flex items-center justify-center space-x-3 text-white/70">
+                                            <span>🏢</span>
+                                            <span>support@megacart.com</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="glassmorphism rounded-xl p-6 text-center fade-in">
+                                <div className="text-4xl mb-4">🎯</div>
+                                <h4 className="text-xl font-semibold text-white mb-3">Our Mission</h4>
+                                <p className="text-white/70">To provide exceptional shopping experiences with quality products and outstanding customer service.</p>
+                            </div>
+                            
+                            <div className="glassmorphism rounded-xl p-6 text-center fade-in">
+                                <div className="text-4xl mb-4">👁️</div>
+                                <h4 className="text-xl font-semibold text-white mb-3">Our Vision</h4>
+                                <p className="text-white/70">To become the most trusted and preferred online shopping destination globally.</p>
+                            </div>
+                            
+                            <div className="glassmorphism rounded-xl p-6 text-center fade-in">
+                                <div className="text-4xl mb-4">💎</div>
+                                <h4 className="text-xl font-semibold text-white mb-3">Our Values</h4>
+                                <p className="text-white/70">Quality, integrity, innovation, and customer satisfaction are at the heart of everything we do.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ProductCard = ({ product, onShowAuth }) => {
+            const { addToCart } = useCart();
+            const { user } = useAuth();
+            const [added, setAdded] = useState(false);
+
+            const handleAddToCart = () => {
+                if (!user) {
+                    onShowAuth();
+                    return;
+                }
+                addToCart(product);
+                setAdded(true);
+                setTimeout(() => setAdded(false), 2000);
+            };
+
+            return (
+                <div className="product-card glassmorphism rounded-xl shadow-lg overflow-hidden">
+                    <div className="h-48 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+                        <img 
+                            src={product.image || "/placeholder.svg"} 
+                            alt={product.name}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                                e.target.src = `https://via.placeholder.com/400x300/3b82f6/white?text=${encodeURIComponent(product.name)}`;
+                            }}
+                        />
+                    </div>
+                    <div className="p-4 bg-white/90 backdrop-blur-sm">
+                        <h3 className="font-semibold text-lg mb-2 text-gray-800 truncate">{product.name}</h3>
+                        <p className="text-gray-600 text-sm mb-3 h-12 overflow-hidden">
+                            {product.description}
+                        </p>
+                        <div className="flex items-center mb-3">
+                            <span className="text-yellow-500">⭐</span>
+                            <span className="text-sm text-gray-600 ml-1">
+                                {product.rating} ({product.reviews} reviews)
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-2xl font-bold gradient-text">
+                                ₹{product.price.toLocaleString()}
+                            </span>
+                            <button
+                                onClick={handleAddToCart}
+                                disabled={!product.inStock}
+                                className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+                                    !product.inStock
+                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        : added
+                                        ? 'bg-green-500 text-white transform scale-95'
+                                        : 'modern-btn text-white hover:shadow-lg hover:scale-105'
+                                }`}
+                            >
+                                {!product.inStock ? '❌ Out of Stock' : added ? '✅ Added!' : '🛒 Add to Cart'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ProductsSection = ({ onShowAuth }) => {
+            const [products, setProducts] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState('');
+            const [selectedCategory, setSelectedCategory] = useState('All');
+            const [searchTerm, setSearchTerm] = useState('');
+            const [categories, setCategories] = useState(['All']);
+
+            useEffect(() => {
+                fetchProducts();
+                fetchCategories();
+            }, []);
+
+            const fetchProducts = async () => {
+                try {
+                    setLoading(true);
+                    setError('');
+                    const response = await fetch(`${API_BASE_URL}/api/products/`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    setProducts(data);
+                } catch (error) {
+                    console.error('Error fetching products:', error);
+                    setError('Failed to load products. Please check if the backend server is running on http://localhost:8000');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const fetchCategories = async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/categories/`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCategories(['All', ...data]);
+                    }
+                } catch (error) {
+                    console.error('Error fetching categories:', error);
+                }
+            };
+
+            const filteredProducts = products.filter(product => {
+                const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    product.description.toLowerCase().includes(searchTerm.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+
+            if (loading) {
+                return (
+                    <div className="flex justify-center items-center py-20">
+                        <div className="loading-spinner"></div>
+                        <span className="ml-4 text-white">Loading awesome products...</span>
+                    </div>
+                );
+            }
+
+            if (error) {
+                return (
+                    <div className="py-16">
+                        <div className="container mx-auto px-4">
+                            <div className="glassmorphism rounded-xl p-8 text-center">
+                                <div className="text-6xl mb-4">⚠️</div>
+                                <h2 className="text-2xl font-bold text-white mb-4">Connection Error</h2>
+                                <p className="text-white/80 mb-6">{error}</p>
+                                <button 
+                                    onClick={fetchProducts}
+                                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full hover:shadow-lg transition-all"
+                                >
+                                    🔄 Retry
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div id="products-section" className="py-16">
+                    <div className="container mx-auto px-4">
+                        <h2 className="text-4xl font-bold text-center mb-8 text-white fade-in">
+                            Our <span className="gradient-text">Products</span>
+                        </h2>
+                        
+                        <div className="mb-8 flex flex-col md:flex-row gap-4">
+                            <input
+                                type="text"
+                                placeholder="🔍 Search products..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="flex-1 px-4 py-3 border-0 rounded-full glassmorphism text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="px-4 py-3 border-0 rounded-full glassmorphism text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            >
+                                {categories.map(cat => (
+                                    <option key={cat} value={cat} className="text-gray-800">{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {filteredProducts.map(product => (
+                                <ProductCard key={product.id} product={product} onShowAuth={onShowAuth} />
+                            ))}
+                        </div>
+
+                        {filteredProducts.length === 0 && (
+                            <div className="text-center py-10">
+                                <div className="text-6xl mb-4">🔍</div>
+                                <p className="text-white/80 text-lg">No products found matching your criteria</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const AuthModal = ({ show, onClose }) => {
+            const [isLogin, setIsLogin] = useState(true);
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+            const { login, register } = useAuth();
+
+            const resetForm = () => {
+                setEmail('');
+                setPassword('');
+                setName('');
+                setError('');
+                setLoading(false);
+            };
+
+            const handleClose = () => {
+                resetForm();
+                onClose();
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError('');
+                setLoading(true);
+
+                const result = isLogin
+                    ? await login(email, password)
+                    : await register(name, email, password);
+
+                if (result.success) {
+                    handleClose();
+                } else {
+                    setError(result.error);
+                }
+                setLoading(false);
+            };
+
+            if (!show) return null;
+
+            return (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="glassmorphism rounded-2xl p-8 max-w-md w-full mx-4 bounce-in">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-white">
+                                {isLogin ? '🔐 Login' : '👋 Register'}
+                            </h2>
+                            <button
+                                onClick={handleClose}
+                                className="text-white/70 hover:text-white text-2xl transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="bg-red-500/20 border border-red-500/50 text-red-100 px-4 py-3 rounded-lg mb-4 backdrop-blur-sm">
+                                ⚠️ {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {!isLogin && (
+                                <div>
+                                    <label className="block text-white/80 mb-2 text-sm font-medium">Full Name</label>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="w-full px-4 py-3 glassmorphism rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                        placeholder="Enter your full name"
+                                        required={!isLogin}
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-white/80 mb-2 text-sm font-medium">Email Address</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-3 glassmorphism rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                    placeholder="Enter your email"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-white/80 mb-2 text-sm font-medium">Password</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 glassmorphism rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                    placeholder="Enter your password"
+                                    required
+                                    minLength="6"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? (
+                                    <div className="flex items-center justify-center">
+                                        <div className="loading-spinner w-5 h-5 mr-2"></div>
+                                        Processing...
+                                    </div>
+                                ) : (isLogin ? 'Login' : 'Create Account')}
+                            </button>
+                        </form>
+
+                        <div className="mt-6 text-center">
+                            <button
+                                onClick={() => {
+                                    setIsLogin(!isLogin);
+                                    setError('');
+                                    resetForm();
+                                }}
+                                className="text-white/80 hover:text-white underline transition-colors"
+                            >
+                                {isLogin ? "Don't have an account? Register here" : 'Already have an account? Login here'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CartModal = ({ show, onClose }) => {
+            const { cart, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
+            const { user } = useAuth();
+            const [orderPlaced, setOrderPlaced] = useState(false);
+
+            const handleCheckout = () => {
+                if (!user) {
+                    alert('Please login first to place an order');
+                    return;
+                }
+                setOrderPlaced(true);
+                setTimeout(() => {
+                    clearCart();
+                    setOrderPlaced(false);
+                    onClose();
+                }, 3000);
+            };
+
+            if (!show) return null;
+
+            return (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="glassmorphism rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-white">Shopping Cart</h2>
+                            <button
+                                onClick={onClose}
+                                className="text-white/70 hover:text-white text-2xl transition-colors"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {orderPlaced ? (
+                            <div className="text-center py-10 bounce-in">
+                                <div className="text-6xl mb-4">✅</div>
+                                <h3 className="text-2xl font-bold text-green-400 mb-2">Order Placed Successfully!</h3>
+                                <p className="text-white/80">Thank you for shopping with MegaCart!</p>
+                            </div>
+                        ) : cart.length === 0 ? (
+                            <div className="text-center py-10">
+                                <div className="text-6xl mb-4">🛒</div>
+                                <h3 className="text-xl text-white mb-2">Your cart is empty</h3>
+                                <p className="text-white/70">Add some products to get started!</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="space-y-4 mb-6">
+                                    {cart.map(item => (
+                                        <div key={item.id} className="flex items-center justify-between glassmorphism rounded-lg p-4">
+                                            <div className="flex items-center space-x-4">
+                                                <img 
+                                                    src={item.image || "/placeholder.svg"} 
+                                                    alt={item.name}
+                                                    className="w-20 h-20 object-cover rounded-lg"
+                                                    onError={(e) => {
+                                                        e.target.src = 'https://via.placeholder.com/80x80/667eea/white?text=Product';
+                                                    }}
+                                                />
+                                                <div>
+                                                    <h4 className="font-semibold text-white text-lg">{item.name}</h4>
+                                                    <p className="text-white/70">₹{item.price.toLocaleString()} each</p>
+                                                    <p className="text-white/50 text-sm">Total: ₹{(item.price * item.quantity).toLocaleString()}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-4">
+                                                <div className="flex items-center space-x-2 glassmorphism rounded-lg p-2">
+                                                    <button
+                                                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                        className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className="w-12 text-center text-white font-semibold">{item.quantity}</span>
+                                                    <button
+                                                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                        className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <button
+                                                    onClick={() => removeFromCart(item.id)}
+                                                    className="text-red-400 hover:text-red-300 font-semibold transition-colors"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="glassmorphism rounded-lg p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <span className="text-xl font-semibold text-white">Total Amount:</span>
+                                        <span className="text-3xl font-bold gradient-text">
+                                            ₹{getCartTotal().toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="flex space-x-4">
+                                        <button
+                                            onClick={clearCart}
+                                            className="flex-1 bg-white/20 hover:bg-white/30 text-white py-3 rounded-lg transition-colors font-semibold"
+                                        >
+                                            Clear Cart
+                                        </button>
+                                        <button
+                                            onClick={handleCheckout}
+                                            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg hover:shadow-lg transition-all font-semibold"
+                                        >
+                                            Checkout
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const Footer = () => {
+            return (
+                <footer className="glassmorphism text-white py-12 mt-16">
+                    <div className="container mx-auto px-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                            <div>
+                                <h3 className="text-xl font-bold mb-4 gradient-text">MegaCart</h3>
+                                <p className="text-white/70 leading-relaxed">Your trusted shopping destination for quality products at unbeatable prices. Experience the future of online shopping.</p>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold mb-4 text-white">Quick Links</h4>
+                                <ul className="space-y-3 text-white/70">
+                                    <li><a href="#about-section" className="hover:text-blue-300 transition-colors">About Us</a></li>
+                                    <li><a href="#" className="hover:text-blue-300 transition-colors">Contact Support</a></li>
+                                    <li><a href="#" className="hover:text-blue-300 transition-colors">FAQ</a></li>
+                                    <li><a href="#" className="hover:text-blue-300 transition-colors">Terms & Conditions</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold mb-4 text-white">Categories</h4>
+                                <ul className="space-y-3 text-white/70">
+                                    <li><a href="#" className="hover:text-blue-300 transition-colors">Electronics</a></li>
+                                    <li><a href="#" className="hover:text-blue-300 transition-colors">Clothing</a></li>
+                                    <li><a href="#" className="hover:text-blue-300 transition-colors">Home & Garden</a></li>
+                                    <li><a href="#" className="hover:text-blue-300 transition-colors">Sports</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold mb-4 text-white">Connect With Us</h4>
+                                <div className="flex space-x-4 mb-4">
+                                    <button className="w-10 h-10 glassmorphism rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
+                                        📘
+                                    </button>
+                                    <button className="w-10 h-10 glassmorphism rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
+                                        🐦
+                                    </button>
+                                    <button className="w-10 h-10 glassmorphism rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
+                                        📷
+                                    </button>
+                                </div>
+                                <div className="text-white/70 text-sm space-y-2">
+                                    <p>📧 support@megacart.com</p>
+                                    <p>📱 +91 98765 43210</p>
+                                    <p>📍 Ranchi, Jharkhand</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="border-t border-white/20 mt-8 pt-8 text-center text-white/60">
+                            <p>&copy; 2024 MegaCart. All rights reserved. Built with ❤️ by Shaswat Kumar for amazing shopping experiences.</p>
+                        </div>
+                    </div>
+                </footer>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const { loading } = useAuth();
+            const [showAuthModal, setShowAuthModal] = useState(false);
+            const [showCartModal, setShowCartModal] = useState(false);
+
+            if (loading) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="loading-spinner mx-auto mb-4"></div>
+                            <p className="text-white">Loading MegaCart...</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen">
+                    <Navbar 
+                        onShowAuth={() => setShowAuthModal(true)} 
+                        onShowCart={() => setShowCartModal(true)} 
+                    />
+                    <HeroSection />
+                    <ProductsSection onShowAuth={() => setShowAuthModal(true)} />
+                    <AboutSection />
+                    <Footer />
+
+                    <AuthModal 
+                        show={showAuthModal} 
+                        onClose={() => setShowAuthModal(false)} 
+                    />
+                    <CartModal 
+                        show={showCartModal} 
+                        onClose={() => setShowCartModal(false)} 
+                    />
+                </div>
+            );
+        };
+
+        // Root Component with Providers
+        const Root = () => {
+            return (
+                <AuthProvider>
+                    <CartProvider>
+                        <App />
+                    </CartProvider>
+                </AuthProvider>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<Root />, document.getElementById('root'));
+    </script>
+</body>
+</html>

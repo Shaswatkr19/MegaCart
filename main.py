@@ -1,20 +1,27 @@
-# main.py - FIXED FastAPI Backend with MongoDB Integration
+# main.py - IMPROVED FastAPI Backend with Better MongoDB Handling
 
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import List, Optional
-from pydantic import BaseModel, EmailStr
+from typing import Any, List, Optional
+from pydantic import BaseModel
 import json
 import hashlib
 import os
 from datetime import datetime, timedelta
 import jwt
 from bson import ObjectId
+import traceback
+import asyncio
 
-# MongoDB imports
-from megacart_backend.database.mongodb import connect_to_mongo, close_mongo_connection, get_database
-from megacart_backend.models.mongodb_models import ProductModel
+# MongoDB imports with error handling
+try:
+    from megacart_backend.database.mongodb import connect_to_mongo, close_mongo_connection, get_database, execute_with_retry
+    MONGODB_AVAILABLE = True
+    print("✅ MongoDB modules loaded successfully")
+except ImportError as e:
+    print(f"❌ MongoDB modules not available: {e}")
+    MONGODB_AVAILABLE = False
 
 # Create FastAPI app
 app = FastAPI(
@@ -23,21 +30,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
-allowed_origins = os.getenv("CORS_ORIGINS", "*").split(",")
-
-
-# CORS middleware
+# CORS middleware - More permissive for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
-    # allow_methods=["*"],
+    allow_methods=["*"],
     allow_headers=["*"],
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 )
 
 # Authentication setup
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 JWT_SECRET = "your-secret-key-here-change-in-production"
 JWT_ALGORITHM = "HS256"
 
@@ -59,7 +62,7 @@ class LoginRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     name: str
-    email: str  # Using EmailStr for validation
+    email: str
     password: str
 
 class UserResponse(BaseModel):
@@ -67,105 +70,11 @@ class UserResponse(BaseModel):
     name: str
     email: str
 
-# Categories
+# Categories and Enhanced Sample Data
 CATEGORIES = ["Electronics", "Clothing", "Books", "Home", "Sports", "Beauty"]
 
-# Authentication helper functions
-def hash_password(password: str) -> str:
-    """Simple password hashing"""
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify password against hash"""
-    return hash_password(plain_password) == hashed_password
-
-def create_access_token(user_data: dict) -> str:
-    """Create JWT access token"""
-    payload = {
-        "user_id": str(user_data["_id"]),
-        "email": user_data["email"],
-        "exp": datetime.utcnow() + timedelta(days=30)  # Token expires in 30 days
-    }
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
-def verify_token(token: str) -> dict:
-    """Verify JWT token"""
-    try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return payload
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Get current user from JWT token"""
-    try:
-        # Verify token
-        payload = verify_token(credentials.credentials)
-        if not payload:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired token"
-            )
-        
-        # Get user from MongoDB
-        db = get_database()
-        user_id = payload.get("user_id")
-        user = await db.users.find_one({"_id": ObjectId(user_id)})
-        
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found"
-            )
-        
-        return {
-            "id": str(user["_id"]),
-            "name": user["name"],
-            "email": user["email"]
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Auth error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed"
-        )
-
-# Database connection events
-@app.on_event("startup")
-async def startup_db_client():
-    await connect_to_mongo()
-
-@app.on_event("shutdown") 
-async def shutdown_db_client():
-    await close_mongo_connection()
-
-# Routes
-@app.get("/")
-async def root():
-    return {"message": "MegaCart API is running!", "status": "success"}
-
-# Product routes
-@app.get("/api/products/", response_model=List[dict])
-async def get_products():
-    """Get all products from MongoDB"""
-    try:
-        db = get_database()
-        products = await db.products.find().to_list(1000)
-        
-        # Convert ObjectId to string for JSON response
-        for product in products:
-            product["_id"] = str(product["_id"])
-        
-        return products
-    except Exception as e:
-        # Fallback to sample data if MongoDB fails
-        SAMPLE_PRODUCTS = [
-            {
+SAMPLE_PRODUCTS = [
+    {
         "id": 1,
         "name": "iPhone 15 Pro MAX",
         "description": "Latest iPhone with advanced features",
@@ -223,34 +132,34 @@ async def get_products():
     {
         "id": 6,
         "name": "Apple Watch Series 9",
-        "description": "Smartwatch with fitness tracking and health features",
+        "description": "Smartwatch with fitness tracking",
         "price": 45999,
         "category": "Electronics",
-        "image": "https://images.unsplash.com/photo-1644235779485-e4d021d8edab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fEFwcGxlJTIwV2F0Y2glMjBTZXJpZXMlMjA5fGVufDB8fDB8fHww",
+        "image": "https://images.unsplash.com/photo-1644235779485-e4d021d8edab?w=400",
         "rating": 4.6,
         "reviews": 870,
         "inStock": True
     },
     {
         "id": 7,
-        "name": "HP Spectre x360",
-        "description": "Convertible laptop with touchscreen display",
-        "price": 134999,
+        "name": "Gaming Headset",
+        "description": "High-quality gaming headphones",
+        "price": 5999,
         "category": "Electronics",
-        "image": "https://images.unsplash.com/photo-1619532550465-ad4dc9bd680a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8SFAlMjBTcGVjdHJlJTIweDM2MHxlbnwwfHwwfHx8MA%3D%3D",
+        "image": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400",
         "rating": 4.5,
-        "reviews": 560,
+        "reviews": 320,
         "inStock": True
     },
     {
         "id": 8,
-        "name": "Canon EOS R10",
-        "description": "Mirrorless camera for photography enthusiasts",
-        "price": 89999,
-        "category": "Electronics",
-        "image": "https://images.unsplash.com/photo-1745848037998-1e6dc8380f7e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Q2Fub24lMjBFT1MlMjBSMTB8ZW58MHx8MHx8fDA%3D",
-        "rating": 4.7,
-        "reviews": 340,
+        "name": "Casual T-Shirt",
+        "description": "Comfortable cotton t-shirt",
+        "price": 999,
+        "category": "Clothing",
+        "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+        "rating": 4.3,
+        "reviews": 150,
         "inStock": True
     },
     {
@@ -660,112 +569,349 @@ async def get_products():
         "reviews": 390,
         "inStock": True
     }
-        ]
-        return SAMPLE_PRODUCTS
+]
+
+# In-memory user storage (fallback)
+FALLBACK_USERS = {}
+
+# Global database connection flag
+DB_CONNECTED = False
+
+# Authentication helper functions
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return hash_password(plain_password) == hashed_password
+
+def create_access_token(user_data: dict) -> str:
+    user_id = str(user_data.get("_id", user_data.get("id", "fallback_id")))
+    payload = {
+        "user_id": user_id,
+        "email": user_data["email"],
+        "exp": datetime.utcnow() + timedelta(days=30)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def verify_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    try:
+        payload = verify_token(credentials.credentials)
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token"
+            )
+        
+        user_id = payload.get("user_id")
+        email = payload.get("email")
+        
+        # Try MongoDB with retry mechanism
+        if DB_CONNECTED and MONGODB_AVAILABLE:
+            try:
+                async def find_user():
+                    db = get_database()
+                    try:
+                        return await db.users.find_one({"_id": ObjectId(user_id)})
+                    except:
+                        return await db.users.find_one({"email": email})
+                
+                user = await execute_with_retry(find_user, max_retries=2, delay=0.5)
+                
+                if user:
+                    return {
+                        "id": str(user["_id"]),
+                        "name": user["name"],
+                        "email": user["email"]
+                    }
+            except Exception as e:
+                print(f"❌ MongoDB user fetch error: {e}")
+        
+        # Fallback to in-memory storage
+        if email in FALLBACK_USERS:
+            user = FALLBACK_USERS[email]
+            return {
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"]
+            }
+        
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Auth error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication failed"
+        )
+
+# Database connection events with better error handling
+@app.on_event("startup")
+async def startup_db_client():
+    global DB_CONNECTED
+    print("🚀 Starting MegaCart API...")
+    
+    if MONGODB_AVAILABLE:
+        try:
+            # Give MongoDB connection a bit more time but with timeout
+            connection_successful = await asyncio.wait_for(
+                connect_to_mongo(), 
+                timeout=10.0
+            )
+            
+            if connection_successful:
+                DB_CONNECTED = True
+                print("✅ MongoDB connected and ready")
+                
+                # Test a simple operation
+                try:
+                    db = get_database()
+                    await db.admin.command('ping')
+                    print("✅ MongoDB ping successful")
+                except Exception as e:
+                    print(f"⚠️ MongoDB ping failed: {e}")
+                    
+            else:
+                print("❌ MongoDB connection failed, using fallback mode")
+                DB_CONNECTED = False
+                
+        except asyncio.TimeoutError:
+            print("❌ MongoDB connection timeout, using fallback mode")
+            DB_CONNECTED = False
+        except Exception as e:
+            print(f"❌ MongoDB connection error: {e}")
+            print("🔄 Using fallback mode")
+            DB_CONNECTED = False
+    else:
+        print("⚠️ MongoDB not available, using fallback storage")
+        DB_CONNECTED = False
+    
+    print(f"🏪 MegaCart API started in {'MongoDB' if DB_CONNECTED else 'Fallback'} mode")
+
+@app.on_event("shutdown") 
+async def shutdown_db_client():
+    global DB_CONNECTED
+    if MONGODB_AVAILABLE and DB_CONNECTED:
+        try:
+            await close_mongo_connection()
+        except Exception as e:
+            print(f"❌ Error closing MongoDB: {e}")
+    DB_CONNECTED = False
+
+# Routes
+@app.get("/")
+async def root():
+    return {
+        "message": "MegaCart API is running!", 
+        "status": "success",
+        "database_mode": "MongoDB" if DB_CONNECTED else "Fallback",
+        "mongodb_available": MONGODB_AVAILABLE,
+        "fallback_users": len(FALLBACK_USERS),
+        "sample_products": len(SAMPLE_PRODUCTS)
+    }
+
+# Product routes with improved error handling
+@app.get("/api/products/", response_model=List[Any])
+async def get_products():
+    """Get all products - Always works with fallback"""
+    print("🛒 Fetching products...")
+    
+    # Try MongoDB first if available
+    if DB_CONNECTED and MONGODB_AVAILABLE:
+        try:
+            async def fetch_products():
+                db = get_database()
+                return await db.products.find().to_list(1000)
+            
+            # Use retry mechanism for MongoDB
+            products = await execute_with_retry(fetch_products, max_retries=2, delay=0.5)
+            
+            if products and len(products) > 0:
+                for product in products:
+                    product["_id"] = str(product["_id"])
+                print(f"✅ Returned {len(products)} products from MongoDB")
+                return products
+            else:
+                print("⚠️ No products found in MongoDB, using fallback")
+                
+        except Exception as e:
+            print(f"❌ MongoDB products fetch failed: {e}")
+    
+    # Always return sample data as fallback
+    print(f"✅ Returned {len(SAMPLE_PRODUCTS)} sample products (fallback)")
+    return SAMPLE_PRODUCTS
 
 @app.get("/api/products/{product_id}")
 async def get_product(product_id: str):
-    """Get single product by ID from MongoDB"""
-    try:
-        db = get_database()
-        
-        # Try to find by ObjectId first
+    """Get single product by ID"""
+    print(f"🔍 Fetching product ID: {product_id}")
+    
+    # Try MongoDB first if available
+    if DB_CONNECTED and MONGODB_AVAILABLE:
         try:
-            product = await db.products.find_one({"_id": ObjectId(product_id)})
-        except:
-            # If not ObjectId, try by integer id
-            product = await db.products.find_one({"id": int(product_id)})
-        
-        if not product:
-            raise HTTPException(status_code=404, detail="Product not found")
-        
-        product["_id"] = str(product["_id"])
-        return product
-    except Exception as e:
-        raise HTTPException(status_code=404, detail="Product not found")
+            async def fetch_single_product():
+                db = get_database()
+                try:
+                    return await db.products.find_one({"_id": ObjectId(product_id)})
+                except:
+                    return await db.products.find_one({"id": int(product_id)})
+            
+            product = await execute_with_retry(fetch_single_product, max_retries=2, delay=0.5)
+            
+            if product:
+                product["_id"] = str(product["_id"])
+                print(f"✅ Found product in MongoDB: {product.get('name', 'Unknown')}")
+                return product
+                
+        except Exception as e:
+            print(f"❌ MongoDB single product fetch failed: {e}")
+    
+    # Fallback to sample data
+    try:
+        product_id_int = int(product_id)
+        for product in SAMPLE_PRODUCTS:
+            if product["id"] == product_id_int:
+                print(f"✅ Found product in fallback: {product['name']}")
+                return product
+    except ValueError:
+        pass
+    
+    print(f"❌ Product not found: {product_id}")
+    raise HTTPException(status_code=404, detail="Product not found")
 
 @app.get("/api/categories/", response_model=List[str])
 async def get_categories():
-    """Get all categories"""
-    try:
-        return CATEGORIES
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to fetch categories")
+    """Get all categories - Always works"""
+    return CATEGORIES
 
-# Authentication routes - FIXED
+# Authentication routes - IMPROVED with better error handling
 @app.post("/auth/register")
 async def register_user(request: RegisterRequest):
-    """Register new user in MongoDB - FIXED"""
+    """Register new user - Works with fallback"""
     try:
+        print(f"📝 Registration attempt for: {request.email}")
+        
         # Enhanced validation
         if not request.name or len(request.name.strip()) < 2:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, 
+                status_code=422, 
                 detail="Name must be at least 2 characters long"
             )
         
         if not request.email or "@" not in request.email:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, 
+                status_code=422, 
                 detail="Please provide a valid email address"
             )
             
         if not request.password or len(request.password) < 6:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, 
+                status_code=422, 
                 detail="Password must be at least 6 characters long"
             )
         
-        # Get database
-        db = get_database()
+        email = request.email.lower().strip()
+        name = request.name.strip()
+        hashed_password = hash_password(request.password)
         
-        # Check if user already exists
-        existing_user = await db.users.find_one({"email": request.email.lower().strip()})
-        if existing_user:
+        # Try MongoDB first if available
+        if DB_CONNECTED and MONGODB_AVAILABLE:
+            try:
+                async def register_in_mongodb():
+                    db = get_database()
+                    
+                    # Check if user exists
+                    existing_user = await db.users.find_one({"email": email})
+                    if existing_user:
+                        raise HTTPException(status_code=400, detail="User already exists")
+                    
+                    # Create user
+                    new_user_data = {
+                        "name": name,
+                        "email": email,
+                        "password": hashed_password,
+                        "created_at": datetime.utcnow(),
+                        "updated_at": datetime.utcnow()
+                    }
+                    
+                    result = await db.users.insert_one(new_user_data)
+                    new_user_data["_id"] = result.inserted_id
+                    return new_user_data
+                
+                user_data = await execute_with_retry(register_in_mongodb, max_retries=2, delay=0.5)
+                
+                if user_data:
+                    access_token = create_access_token(user_data)
+                    user_response = {
+                        "id": str(user_data["_id"]),
+                        "name": name,
+                        "email": email
+                    }
+                    
+                    print(f"✅ User registered in MongoDB: {email}")
+                    
+                    return {
+                        "message": "User registered successfully",
+                        "access_token": access_token,
+                        "token_type": "bearer",
+                        "user": user_response
+                    }
+                    
+            except HTTPException:
+                raise
+            except Exception as e:
+                print(f"❌ MongoDB registration failed: {e}")
+        
+        # Fallback to in-memory storage
+        if email in FALLBACK_USERS:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
+                status_code=400, 
                 detail="An account with this email already exists"
             )
         
-        # Create new user document
-        hashed_password = hash_password(request.password)
-        
-        new_user_data = {
-            "name": request.name.strip(),
-            "email": request.email.lower().strip(),
+        # Create user in fallback storage
+        user_id = f"user_{len(FALLBACK_USERS) + 1}"
+        user_data = {
+            "id": user_id,
+            "_id": user_id,
+            "name": name,
+            "email": email,
             "password": hashed_password,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "created_at": datetime.utcnow()
         }
         
-        # Insert user into MongoDB
-        print(f"Attempting to insert user: {new_user_data['email']}")
-        result = await db.users.insert_one(new_user_data)
+        FALLBACK_USERS[email] = user_data
         
-        if not result.inserted_id:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create user account"
-            )
-        
-        # Add the _id to our user data for token creation
-        new_user_data["_id"] = result.inserted_id
-        
-        # Create access token
-        access_token = create_access_token(new_user_data)
-        
-        # Prepare user response (without password)
+        access_token = create_access_token(user_data)
         user_response = {
-            "id": str(new_user_data["_id"]),
-            "name": new_user_data["name"],
-            "email": new_user_data["email"]
+            "id": user_id,
+            "name": name,
+            "email": email
         }
         
-        print(f"User registered successfully: {user_response['email']}")
+        print(f"✅ User registered in fallback storage: {email}")
         
-        # Return response matching frontend expectations
         return {
-            "message": "User registered successfully",
+            "message": "User registered successfully (fallback mode)",
             "access_token": access_token,
             "token_type": "bearer",
             "user": user_response
@@ -774,77 +920,91 @@ async def register_user(request: RegisterRequest):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Registration error: {e}")
-        import traceback
+        print(f"❌ Registration error: {e}")
         traceback.print_exc()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            status_code=500, 
             detail=f"Registration failed: {str(e)}"
         )
 
 @app.post("/auth/login")
 async def login_user(request: LoginRequest):
-    """Login user from MongoDB - FIXED"""
+    """Login user - Works with fallback"""
     try:
+        print(f"🔐 Login attempt for: {request.email}")
+        
         email = request.email.lower().strip()
         password = request.password
         
-        # Basic validation
         if not email or not password:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail="Email and password are required"
             )
         
-        # Get database
-        db = get_database()
+        # Try MongoDB first if available
+        if DB_CONNECTED and MONGODB_AVAILABLE:
+            try:
+                async def login_from_mongodb():
+                    db = get_database()
+                    return await db.users.find_one({"email": email})
+                
+                user = await execute_with_retry(login_from_mongodb, max_retries=2, delay=0.5)
+                
+                if user and verify_password(password, user["password"]):
+                    access_token = create_access_token(user)
+                    user_response = {
+                        "id": str(user["_id"]),
+                        "name": user["name"],
+                        "email": user["email"]
+                    }
+                    
+                    print(f"✅ MongoDB login successful: {email}")
+                    
+                    return {
+                        "message": "Login successful",
+                        "access_token": access_token,
+                        "token_type": "bearer",
+                        "user": user_response
+                    }
+                    
+            except Exception as e:
+                print(f"❌ MongoDB login error: {e}")
         
-        # Find user in MongoDB
-        print(f"Attempting login for email: {email}")
-        user = await db.users.find_one({"email": email})
+        # Fallback to in-memory storage
+        if email in FALLBACK_USERS:
+            user = FALLBACK_USERS[email]
+            
+            if verify_password(password, user["password"]):
+                access_token = create_access_token(user)
+                user_response = {
+                    "id": user["id"],
+                    "name": user["name"],
+                    "email": user["email"]
+                }
+                
+                print(f"✅ Fallback login successful: {email}")
+                
+                return {
+                    "message": "Login successful (fallback mode)",
+                    "access_token": access_token,
+                    "token_type": "bearer",
+                    "user": user_response
+                }
         
-        if not user:
-            print(f"User not found: {email}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, 
-                detail="Invalid email or password"
-            )
-        
-        # Verify password
-        if not verify_password(password, user["password"]):
-            print(f"Password mismatch for user: {email}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, 
-                detail="Invalid email or password"
-            )
-        
-        # Create access token
-        access_token = create_access_token(user)
-        
-        # Prepare user response
-        user_response = {
-            "id": str(user["_id"]),
-            "name": user["name"],
-            "email": user["email"]
-        }
-        
-        print(f"Login successful for user: {email}")
-        
-        return {
-            "message": "Login successful",
-            "access_token": access_token,
-            "token_type": "bearer",
-            "user": user_response
-        }
+        print(f"❌ Login failed for: {email}")
+        raise HTTPException(
+            status_code=401, 
+            detail="Invalid email or password"
+        )
         
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Login error: {e}")
-        import traceback
+        print(f"❌ Login error: {e}")
         traceback.print_exc()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            status_code=500, 
             detail=f"Login failed: {str(e)}"
         )
 
@@ -856,50 +1016,83 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
 # Database debugging endpoints
 @app.get("/auth/users")
 async def get_all_users():
-    """Get all registered users from MongoDB (for debugging)"""
+    """Get all registered users (for debugging)"""
     try:
-        db = get_database()
-        users = await db.users.find({}, {"password": 0}).to_list(100)  # Exclude passwords
+        users = []
         
-        # Convert ObjectId to string
-        for user in users:
-            user["_id"] = str(user["_id"])
+        # Try MongoDB first
+        if DB_CONNECTED and MONGODB_AVAILABLE:
+            try:
+                async def fetch_mongo_users():
+                    db = get_database()
+                    return await db.users.find({}, {"password": 0}).to_list(100)
+                
+                mongo_users = await execute_with_retry(fetch_mongo_users, max_retries=2, delay=0.5)
+                
+                if mongo_users:
+                    for user in mongo_users:
+                        user["_id"] = str(user["_id"])
+                        user["source"] = "MongoDB"
+                    users.extend(mongo_users)
+                    
+            except Exception as e:
+                print(f"❌ Error fetching MongoDB users: {e}")
+        
+        # Add fallback users
+        for email, user in FALLBACK_USERS.items():
+            users.append({
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"],
+                "source": "Fallback",
+                "created_at": user.get("created_at")
+            })
         
         return {
             "total_users": len(users),
+            "database_connected": DB_CONNECTED,
+            "mongodb_available": MONGODB_AVAILABLE,
             "users": users
         }
+        
     except Exception as e:
-        print(f"Error fetching users: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch users")
+        print(f"❌ Error in get_all_users: {e}")
+        return {
+            "total_users": len(FALLBACK_USERS),
+            "database_connected": False,
+            "error": str(e),
+            "users": [
+                {
+                    "id": user["id"],
+                    "name": user["name"],
+                    "email": user["email"],
+                    "source": "Fallback"
+                }
+                for user in FALLBACK_USERS.values()
+            ]
+        }
 
 @app.get("/debug/db-connection")
 async def test_db_connection():
     """Test MongoDB connection"""
-    try:
-        db = get_database()
-        # Try to ping the database
-        result = await db.command("ping")
-        
-        # Count users
-        user_count = await db.users.count_documents({})
-        
-        return {
-            "database_connected": True,
-            "ping_result": result,
-            "total_users": user_count,
-            "collections": await db.list_collection_names()
-        }
-    except Exception as e:
-        return {
-            "database_connected": False,
-            "error": str(e)
-        }
+    return {
+        "mongodb_modules_available": MONGODB_AVAILABLE,
+        "database_connected": DB_CONNECTED,
+        "fallback_users_count": len(FALLBACK_USERS),
+        "sample_products_count": len(SAMPLE_PRODUCTS),
+        "status": "MongoDB" if DB_CONNECTED else "Fallback Mode"
+    }
 
 # Health check
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "MegaCart API"}
+    return {
+        "status": "healthy", 
+        "service": "MegaCart API",
+        "database_mode": "MongoDB" if DB_CONNECTED else "Fallback Mode",
+        "fallback_users": len(FALLBACK_USERS),
+        "mongodb_available": MONGODB_AVAILABLE
+    }
 
 # Protected route example
 @app.get("/api/profile")
@@ -907,14 +1100,11 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
     """Get user profile (protected route)"""
     return {
         "message": "This is a protected route",
-        "user": current_user
+        "user": current_user,
+        "source": "MongoDB" if DB_CONNECTED else "Fallback"
     }
 
 if __name__ == "__main__":
     import uvicorn
+    print("🚀 Starting MegaCart API...")
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
-
-# Required packages:
-# pip install PyJWT
-# pip install python-multipart
-# pip install motor  # MongoDB async driver
