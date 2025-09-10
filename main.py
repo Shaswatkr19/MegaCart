@@ -1107,4 +1107,4 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting MegaCart API...")
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
