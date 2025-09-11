@@ -568,6 +568,215 @@ SAMPLE_PRODUCTS = [
         "rating": 4.7,
         "reviews": 390,
         "inStock": True
+    },
+    {
+        "id": 46,
+        "name": "Apple iPhone 17 Pro",
+        "description": "Next-generation iPhone with A19 Bionic chip, advanced cameras, and ProMotion display.",
+        "price": 139999,
+        "category": "Mobiles",
+        "image": "https://images.unsplash.com/photo-1695048132545-3f879a3d1234?w=800",
+        "rating": 4.9,
+        "reviews": 1200,
+        "inStock": True
+    },
+    {
+        "id": 47,
+        "name": "Samsung Galaxy Z Fold 6",
+        "description": "Next-gen foldable smartphone with multitasking features.",
+        "price": 154999,
+        "category": "Mobiles",
+        "image": "https://images.unsplash.com/photo-1592899677977-9e04b2e5f73d?w=800",
+        "rating": 4.7,
+        "reviews": 890,
+        "inStock": True
+    },
+    {
+        "id": 48,
+        "name": "Puma Sports T-Shirt",
+        "description": "Breathable and lightweight t-shirt for workouts and casual wear.",
+        "price": 1299,
+        "category": "Clothing",
+        "image": "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=800",
+        "rating": 4.3,
+        "reviews": 210,
+        "inStock": True
+    },
+    {
+        "id": 49,
+        "name": "Woodland Leather Boots",
+        "description": "Durable outdoor boots with rugged sole for trekking.",
+        "price": 4999,
+        "category": "Footwear",
+        "image": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800",
+        "rating": 4.5,
+        "reviews": 340,
+        "inStock": True
+    },
+    {
+        "id": 50,
+        "name": "Nike Backpack Pro",
+        "description": "Stylish and spacious backpack for college and travel.",
+        "price": 3499,
+        "category": "Bags",
+        "image": "https://images.unsplash.com/photo-1622560480605-d83c853bc5c4?w=800",
+        "rating": 4.6,
+        "reviews": 270,
+        "inStock": True
+    },
+    {
+        "id": 51,
+        "name": "Philips Air Fryer XL",
+        "description": "Oil-free air fryer for healthy and tasty cooking.",
+        "price": 11999,
+        "category": "Home Appliances",
+        "image": "https://images.unsplash.com/photo-1617196038435-6cdd9d8a8d89?w=800",
+        "rating": 4.7,
+        "reviews": 510,
+        "inStock": True
+    },
+    {
+        "id": 52,
+        "name": "Yonex Badminton Racket",
+        "description": "Lightweight graphite racket for professional gameplay.",
+        "price": 3999,
+        "category": "Sports",
+        "image": "https://images.unsplash.com/photo-1587385789096-019d2908b00b?w=800",
+        "rating": 4.5,
+        "reviews": 190,
+        "inStock": True
+    },
+    {
+        "id": 53,
+        "name": "Allen Solly Formal Shirt",
+        "description": "Cotton slim-fit shirt perfect for office wear.",
+        "price": 2199,
+        "category": "Clothing",
+        "image": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800",
+        "rating": 4.4,
+        "reviews": 300,
+        "inStock": True
+    },
+    {
+        "id": 54,
+        "name": "Prestige Mixer Grinder",
+        "description": "500W mixer grinder with 3 jars for multipurpose kitchen use.",
+        "price": 4999,
+        "category": "Kitchen",
+        "image": "https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=800",
+        "rating": 4.6,
+        "reviews": 280,
+        "inStock": True
+    },
+    {
+        "id": 55,
+        "name": "Fossil Gen 7 Smartwatch",
+        "description": "Smartwatch with heart rate monitor and fitness tracking.",
+        "price": 18999,
+        "category": "Watches",
+        "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
+        "rating": 4.5,
+        "reviews": 420,
+        "inStock": True
+    },
+    {
+        "id": 56,
+        "name": "Wildcraft Travel Duffel",
+        "description": "Durable duffel bag with 3 compartments for travel.",
+        "price": 2599,
+        "category": "Bags",
+        "image": "https://images.unsplash.com/photo-1600180758895-6d09c0e7a94f?w=800",
+        "rating": 4.4,
+        "reviews": 180,
+        "inStock": True
+    },
+    {
+        "id": 57,
+        "name": "Adidas Football",
+        "description": "FIFA quality pro football with excellent grip and durability.",
+        "price": 2499,
+        "category": "Sports",
+        "image": "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800",
+        "rating": 4.7,
+        "reviews": 390,
+        "inStock": True
+        },
+        {
+        "id": 58,
+        "name": "Cannon DSLR Camera Bag",
+        "description": "Protective and stylish camera bag with waterproof coating.",
+        "price": 2999,
+        "category": "Accessories",
+        "image": "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800",
+        "rating": 4.6,
+        "reviews": 210,
+        "inStock": True
+    },
+    {
+        "id": 59,
+        "name": "Levi's Denim Jacket",
+        "description": "Classic denim jacket with modern slim fit.",
+        "price": 5499,
+        "category": "Clothing",
+        "image": "https://images.unsplash.com/photo-1520975918319-9de52b3f91b8?w=800",
+        "rating": 4.8,
+        "reviews": 370,
+        "inStock": True
+    },
+    {
+        "id": 60,
+        "name": "Butterfly Gas Stove 3 Burner",
+        "description": "Stainless steel gas stove with 3 high-efficiency burners.",
+        "price": 7499,
+        "category": "Kitchen",
+        "image": "https://images.unsplash.com/photo-1601050690685-f3e4f0b3f6d6?w=800",
+        "rating": 4.5,
+        "reviews": 260,
+        "inStock": True
+    },
+    {
+        "id": 61,
+        "name": "Skybags Laptop Bag",
+        "description": "Ergonomic laptop bag with water-resistant fabric.",
+        "price": 3299,
+        "category": "Bags",
+        "image": "https://images.unsplash.com/photo-1522199710521-72d69614c702?w=800",
+        "rating": 4.6,
+        "reviews": 310,
+        "inStock": True
+    },
+    {
+        "id": 62,
+        "name": "Decathlon Yoga Mat",
+        "description": "Eco-friendly yoga mat with non-slip surface.",
+        "price": 1599,
+        "category": "Sports",
+        "image": "https://images.unsplash.com/photo-1599058917212-d750089bc07a?w=800",
+        "rating": 4.7,
+        "reviews": 420,
+        "inStock": True
+    },
+    {
+        "id": 63,
+        "name": "Ray-Ban Wayfarer",
+        "description": "Classic sunglasses with UV protection.",
+        "price": 7999,
+        "category": "Accessories",
+        "image": "https://images.unsplash.com/photo-1602524812106-3f2e2a6b9d9d?w=800",
+        "rating": 4.6,
+        "reviews": 500,
+        "inStock": True
+    },
+    {
+        "id": 64,
+        "name": "Nike Running Shorts",
+        "description": "Comfortable and lightweight shorts for running and gym.",
+        "price": 1799,
+        "category": "Clothing",
+        "image": "https://images.unsplash.com/photo-1533000971552-6a962ff0b9f8?w=800",
+        "rating": 4.4,
+        "reviews": 230,
+        "inStock": True
     }
 ]
 
