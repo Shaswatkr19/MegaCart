@@ -575,7 +575,7 @@ SAMPLE_PRODUCTS = [
         "description": "Next-generation iPhone with A19 Bionic chip, advanced cameras, and ProMotion display.",
         "price": 139999,
         "category": "Mobiles",
-        "image": "https://images.unsplash.com/photo-1695048132545-3f879a3d1234?w=800",
+        "image": "https://images.unsplash.com/photo-1727099820362-b5bd5cd5a075?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8aXBob25lJTIwMTYlMjBwcm98ZW58MHx8MHx8fDA%3D",
         "rating": 4.9,
         "reviews": 1200,
         "inStock": True
@@ -586,7 +586,7 @@ SAMPLE_PRODUCTS = [
         "description": "Next-gen foldable smartphone with multitasking features.",
         "price": 154999,
         "category": "Mobiles",
-        "image": "https://images.unsplash.com/photo-1592899677977-9e04b2e5f73d?w=800",
+        "image": "https://images.unsplash.com/photo-1722150635400-781fa4b5f40e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8c2Ftc3VuZyUyMGFnYWxheHklMjB6JTIwZm9sZHxlbnwwfHwwfHx8MA%3D%3D",
         "rating": 4.7,
         "reviews": 890,
         "inStock": True
@@ -619,7 +619,7 @@ SAMPLE_PRODUCTS = [
         "description": "Stylish and spacious backpack for college and travel.",
         "price": 3499,
         "category": "Bags",
-        "image": "https://images.unsplash.com/photo-1622560480605-d83c853bc5c4?w=800",
+        "image": "https://images.unsplash.com/photo-1654512583248-60b22227fbff?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8TmlrZSUyMEJhY2twYWNrJTIwUHJvfGVufDB8fDB8fHww",
         "rating": 4.6,
         "reviews": 270,
         "inStock": True
@@ -630,7 +630,7 @@ SAMPLE_PRODUCTS = [
         "description": "Oil-free air fryer for healthy and tasty cooking.",
         "price": 11999,
         "category": "Home Appliances",
-        "image": "https://images.unsplash.com/photo-1617196038435-6cdd9d8a8d89?w=800",
+        "image": "https://images.unsplash.com/photo-1695089028114-ce28248f0ab9?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fFBoaWxpcHMlMjBBaXJGcnllciUyMFhMfGVufDB8fDB8fHww",
         "rating": 4.7,
         "reviews": 510,
         "inStock": True
@@ -641,7 +641,7 @@ SAMPLE_PRODUCTS = [
         "description": "Lightweight graphite racket for professional gameplay.",
         "price": 3999,
         "category": "Sports",
-        "image": "https://images.unsplash.com/photo-1587385789096-019d2908b00b?w=800",
+        "image": "https://plus.unsplash.com/premium_photo-1679836866548-221bd8af12d6?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fFlvbmV4JTIwQmFkbWludG9uJTIwUmFja2V0fGVufDB8fDB8fHww",
         "rating": 4.5,
         "reviews": 190,
         "inStock": True
@@ -685,7 +685,7 @@ SAMPLE_PRODUCTS = [
         "description": "Durable duffel bag with 3 compartments for travel.",
         "price": 2599,
         "category": "Bags",
-        "image": "https://images.unsplash.com/photo-1600180758895-6d09c0e7a94f?w=800",
+        "image": "https://images.unsplash.com/photo-1688591845325-83962ef06a09?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fFdpbGRjcmFmdCUyMFRyYXZlbCUyMER1ZmZlbHxlbnwwfHwwfHx8MA%3D%3D",
         "rating": 4.4,
         "reviews": 180,
         "inStock": True
@@ -718,7 +718,7 @@ SAMPLE_PRODUCTS = [
         "description": "Classic denim jacket with modern slim fit.",
         "price": 5499,
         "category": "Clothing",
-        "image": "https://images.unsplash.com/photo-1520975918319-9de52b3f91b8?w=800",
+        "image": "https://images.unsplash.com/photo-1744215921293-ae39b5a9f497?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8TGV2aSdzJTIwRGVuaW0lMjBKYWNrZXR8ZW58MHx8MHx8fDA%3D",
         "rating": 4.8,
         "reviews": 370,
         "inStock": True
@@ -729,7 +729,7 @@ SAMPLE_PRODUCTS = [
         "description": "Stainless steel gas stove with 3 high-efficiency burners.",
         "price": 7499,
         "category": "Kitchen",
-        "image": "https://images.unsplash.com/photo-1601050690685-f3e4f0b3f6d6?w=800",
+        "image": "https://images.unsplash.com/photo-1608454781855-613047b52c94?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fEJ1dHRlcmZseSUyMEdhcyUyMFN0b3ZlJTIwMyUyMEJ1cm5lcnxlbnwwfHwwfHx8MA%3D%3D",
         "rating": 4.5,
         "reviews": 260,
         "inStock": True
@@ -751,7 +751,7 @@ SAMPLE_PRODUCTS = [
         "description": "Eco-friendly yoga mat with non-slip surface.",
         "price": 1599,
         "category": "Sports",
-        "image": "https://images.unsplash.com/photo-1599058917212-d750089bc07a?w=800",
+        "image": "https://images.unsplash.com/photo-1630225758612-8c511aad6c00?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8RGVjYXRobG9uJTIwWW9nYSUyME1hdHxlbnwwfHwwfHx8MA%3D%3D",
         "rating": 4.7,
         "reviews": 420,
         "inStock": True
@@ -762,7 +762,7 @@ SAMPLE_PRODUCTS = [
         "description": "Classic sunglasses with UV protection.",
         "price": 7999,
         "category": "Accessories",
-        "image": "https://images.unsplash.com/photo-1602524812106-3f2e2a6b9d9d?w=800",
+        "image": "https://images.unsplash.com/photo-1695057221246-3ab8a2ff5bf2?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8cmF5JTIwYmFufGVufDB8fDB8fHww",
         "rating": 4.6,
         "reviews": 500,
         "inStock": True
@@ -773,7 +773,7 @@ SAMPLE_PRODUCTS = [
         "description": "Comfortable and lightweight shorts for running and gym.",
         "price": 1799,
         "category": "Clothing",
-        "image": "https://images.unsplash.com/photo-1533000971552-6a962ff0b9f8?w=800",
+        "image": "https://images.unsplash.com/photo-1623285512357-ff3b9a7579ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8bmlrZSUyMHJ1bm5pbmclMjBzaG9ydHN8ZW58MHx8MHx8fDA%3D",
         "rating": 4.4,
         "reviews": 230,
         "inStock": True
