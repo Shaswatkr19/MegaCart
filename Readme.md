@@ -49,7 +49,7 @@ Visit the live website: [MegaCart](https://68c1e053a811e70693c97ba2--kaleidoscop
 
 ### Deployment
 - **Netlify**: Frontend deployment and hosting
-- **Backend**: (Add your backend deployment platform)
+- **Backend**: Render
 
 ## 🚀 Installation
 
